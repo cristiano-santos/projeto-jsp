@@ -31,7 +31,7 @@ public class DAOUsuarioRepository {
 
 			connection.commit();
 
-		} else {/*Atualiza o usuario*/
+		} else {/* Atualiza o usuario */
 			String sql = "UPDATE model_login SET login=?, senha=?, nome=?, email=? WHERE id = " + objeto.getId() + ";";
 			PreparedStatement prepareSql = connection.prepareStatement(sql);
 			prepareSql.setString(1, objeto.getLogin());
@@ -77,5 +77,17 @@ public class DAOUsuarioRepository {
 
 		resultado.next(); /* Para entrar nos resultados do sql */
 		return resultado.getBoolean("existe");
+	}
+
+	public void deletarUsuario(String idUser) throws Exception {
+
+		String sql = "DELETE FROM model_login WHERE id = ?;";
+		PreparedStatement prepareSql = connection.prepareStatement(sql);
+
+		prepareSql.setLong(1, Long.parseLong(idUser));
+
+		prepareSql.executeUpdate();
+		
+		connection.commit();
 	}
 }

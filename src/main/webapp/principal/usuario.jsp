@@ -27,7 +27,7 @@
 					<div class="col-12 grid-margin stretch-card">
 						<div class="card">
 							<div class="card-body">
-								<form class="forms-sample"
+								<form class="forms-sample" enctype="multipart/form-data"
 									action="<%=request.getContextPath()%>/ServletsUsuarioController"
 									method="post" id="formUser">
 									<input type="hidden" name="acao" id="acao" value="">
@@ -37,6 +37,25 @@
 											class="form-control" name="id" id="id" readonly="readonly"
 											value="${modelLogin.id}">
 									</div>
+									
+									 <div class="form-group form-default input-group mb-4" >
+									 
+									 <div class="input-group-prepend" >
+									 
+									 	<c:if test="${modelLogin.fotouser != '' && modelLogin.fotouser != null}">
+									 		<a href="<%= request.getContextPath() %>/ServletsUsuarioController?acao=downloadFoto&id=${modelLogin.id}">
+									 			 <img alt="Imagem User" id="fotoembase64" src="${modelLogin.fotouser}" width="100px">
+									 		</a>
+									 	</c:if>
+									 		 
+									 	<c:if test="${modelLogin.fotouser == '' || modelLogin.fotouser == null}">
+									 		<img alt="Imagem User" id="fotoembase64" src="assets/images/faces/face60.png" width="100px">
+									 	</c:if>
+									 	
+									 </div>
+                                       <input type="file" id="fileFoto" name="fileFoto" accept="image/*" onchange="visualizarImg('fotoembase64', 'fileFoto');" class="form-control-file" style="margin-top: 15px; margin-left: 5px; color: #6c7293;">
+                                       
+                                  </div>
 
 									<div class="form-group">
 										<label for="exampleInputEmail3">Nome</label> <input
@@ -55,7 +74,7 @@
 
 									<div class="form-group">
 										<label>Perfil do usuario</label> <select
-											class="form-control" name="perfil" style="width: 100%">
+											class="form-control" name="perfil" style="width: 100%;">
 											<option disabled="disabled" selected="selected">[Selecione o Perfil]</option>
 											<option value="ADMIN" <%
 											ModelLogin modelLogin = (ModelLogin) request.getAttribute("modelLogin");
@@ -63,7 +82,7 @@
 												out.print(" ");
 												out.print("selected=\"selected\"");
 												out.print(" ");
-											}%>>Administrador</option>
+											}%>>Administrador </option>
 											<option value="SUPERVISOR" <%
 											modelLogin = (ModelLogin) request.getAttribute("modelLogin");
 											if(modelLogin != null && modelLogin.getPerfil().equals("SUPERVISOR")){
@@ -137,18 +156,6 @@
 										</div>
 									</div>
 
-									<div class="form-group">
-										<label>Carregar Arquivo</label> <input type="file"
-											name="img[]" class="file-upload-default">
-										<div class="input-group col-xs-12">
-											<input type="text" class="form-control file-upload-info"
-												disabled placeholder="Carregar Imagem"> <span
-												class="input-group-append">
-												<button class="file-upload-browse btn btn-primary"
-													type="button">Upload</button>
-											</span>
-										</div>
-									</div>
 
 									<button type="button" class="btn btn-outline-primary btn-fw"
 										onclick="limparForm();">Novo</button>
@@ -261,6 +268,25 @@
 
 
 	<script type="text/javascript">
+		
+		function visualizarImg(fotoembase64, fileFoto){
+			
+			var preview = document.getElementById(fotoembase64); // campo IMG html
+			var fileUser = document.getElementById(fileFoto).files[0];
+			var reader = new FileReader();
+			
+			reader.onloadend = function(){
+				preview.src = reader.result; /*Carrega a foto na tela*/
+			};
+			
+			if(fileUser){
+				reader.readAsDataURL(fileUser);/*Preview da imagem*/
+			}else{
+				preview.src= '';
+			}
+		}
+	
+	
 		function verEditar(id) {
 
 			var urlAction = document.getElementById('formUser').action;

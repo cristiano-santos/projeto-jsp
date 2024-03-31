@@ -24,7 +24,7 @@
 				<div class="profile-pic">
 					<div class="count-indicator">
 						<img class="img-xs rounded-circle "
-							src="<%= request.getContextPath()%>/assets/images/faces/face00.png"
+							src="<%= request.getContextPath()%>/assets/images/faces/face50.png"
 							alt=""> <span class="count bg-success"></span>
 					</div>
 					<div class="profile-name">

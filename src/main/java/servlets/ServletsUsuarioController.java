@@ -3,18 +3,27 @@ package servlets;
 import java.io.IOException;
 import java.util.List;
 
+import javax.imageio.stream.ImageOutputStreamImpl;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.tomcat.util.codec.binary.Base64;
+import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
+import org.postgresql.shaded.com.ongres.scram.common.bouncycastle.base64.Base64Encoder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import dao.DAOUsuarioRepository;
 import model.ModelLogin;
 
+@MultipartConfig
 @WebServlet(urlPatterns = {"/ServletsUsuarioController"})
 public class ServletsUsuarioController extends HttpServlet {
 	private static final long serialVersionUID = 1L;
@@ -25,6 +34,7 @@ public class ServletsUsuarioController extends HttpServlet {
 
 	}
 
+	@SuppressWarnings("static-access")
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 
@@ -82,6 +92,15 @@ public class ServletsUsuarioController extends HttpServlet {
 				request.setAttribute("modelLogins", modelLogins);
 				request.getRequestDispatcher("/principal/usuario.jsp").forward(request, response);
 			
+			}else if(acao != null && !acao.isEmpty() && acao.equalsIgnoreCase("downloadFoto")) {
+				String idUser = request.getParameter("id");
+				
+				ModelLogin modelLogin = daoUsuarioRepository.consultarUsuarioId(idUser);
+				if(modelLogin.getFotouser() != null && !modelLogin.getFotouser().isEmpty()) {
+					response.setHeader("Content-Disposition", "attachment;filename=arquivo." + modelLogin.getExtensaofotouser());
+					response.getOutputStream().write(new Base64().decodeBase64(modelLogin.getFotouser().split("\\,")[1]));
+				}
+			
 			}else {
 				List<ModelLogin> modelLogins = daoUsuarioRepository.consultarUsuarioList();
 				request.setAttribute("modelLogins", modelLogins);
@@ -120,6 +139,19 @@ public class ServletsUsuarioController extends HttpServlet {
 			modelLogin.setSenha(senha);
 			modelLogin.setPerfil(perfil);
 			modelLogin.setSexo(sexo);
+			
+			if(ServletFileUpload.isMultipartContent(request)) {
+				Part part = request.getPart("fileFoto"); /*Pega a foto da tela */
+				
+				if(part.getSize() > 0) {
+				byte[] foto = IOUtils.toByteArray(part.getInputStream()); /*Converte a imagem para byte*/
+				@SuppressWarnings("static-access")
+				String imagemBase64 = "data:image/" + part.getContentType().split("\\/")[1] + ";base64," + new Base64().encodeBase64String(foto);
+				
+				modelLogin.setFotouser(imagemBase64);
+				modelLogin.setExtensaofotouser(part.getContentType().split("\\/")[1]);
+				}
+			}
 
 			if (daoUsuarioRepository.validarCadastro(modelLogin.getLogin()) && modelLogin.getId() == null) {
 				msg = "Já existe esse login cadastrado para outro usuario, favor informe outro login.";
